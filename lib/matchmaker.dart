@@ -1,8 +1,9 @@
-/// Support for doing something awesome.
+/// A pure Dart package for video game skill rating systems.
 ///
-/// More dartdocs go here.
+/// This package provides implementations of rating algorithms for competitive
+/// games.
 library;
 
-export 'src/matchmaker_base.dart';
-
-// TODO: Export any libraries intended for clients of this package.
+export 'src/glicko2/glicko2.dart';
+export 'src/glicko2/glicko2_rating.dart';
+export 'src/glicko2/match_result.dart';

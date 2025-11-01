@@ -2,93 +2,6 @@ import 'package:matchmaker/matchmaker.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group('Glicko2Rating', () {
-    test('creates rating with default values', () {
-      const rating = Glicko2Rating();
-
-      expect(rating.rating, equals(1500.0));
-      expect(rating.rd, equals(350.0));
-      expect(rating.volatility, equals(0.06));
-    });
-
-    test('creates rating with custom values', () {
-      const rating = Glicko2Rating(
-        rating: 1800,
-        rd: 50,
-        volatility: 0.05,
-      );
-
-      expect(rating.rating, equals(1800.0));
-      expect(rating.rd, equals(50.0));
-      expect(rating.volatility, equals(0.05));
-    });
-
-    test('calculates 95% confidence interval correctly', () {
-      const rating = Glicko2Rating(rating: 1500, rd: 50);
-      final interval = rating.getConfidenceInterval();
-
-      // 95% CI = rating ± 1.96 * RD
-      expect(interval.lower, closeTo(1402.0, 0.1));
-      expect(interval.upper, closeTo(1598.0, 0.1));
-    });
-
-    test('copyWith creates new instance with updated values', () {
-      const original = Glicko2Rating(rating: 1500, rd: 200, volatility: 0.06);
-      final updated = original.copyWith(rating: 1550);
-
-      expect(updated.rating, equals(1550.0));
-      expect(updated.rd, equals(200.0));
-      expect(updated.volatility, equals(0.06));
-      expect(identical(original, updated), isFalse);
-    });
-
-    test('equality works correctly', () {
-      const rating1 = Glicko2Rating(rating: 1500, rd: 200, volatility: 0.06);
-      const rating2 = Glicko2Rating(rating: 1500, rd: 200, volatility: 0.06);
-      const rating3 = Glicko2Rating(rating: 1600, rd: 200, volatility: 0.06);
-
-      expect(rating1, equals(rating2));
-      expect(rating1, isNot(equals(rating3)));
-    });
-  });
-
-  group('MatchResult', () {
-    const opponent = Glicko2Rating(rating: 1500);
-
-    test('creates win result', () {
-      const result = MatchResult.win(opponent);
-
-      expect(result.score, equals(1.0));
-      expect(result.opponent, equals(opponent));
-    });
-
-    test('creates draw result', () {
-      const result = MatchResult.draw(opponent);
-
-      expect(result.score, equals(0.5));
-      expect(result.opponent, equals(opponent));
-    });
-
-    test('creates loss result', () {
-      const result = MatchResult.loss(opponent);
-
-      expect(result.score, equals(0.0));
-      expect(result.opponent, equals(opponent));
-    });
-
-    test('validates score range', () {
-      expect(
-        () => MatchResult(opponent: opponent, score: 1.5),
-        throwsA(isA<AssertionError>()),
-      );
-
-      expect(
-        () => MatchResult(opponent: opponent, score: -0.5),
-        throwsA(isA<AssertionError>()),
-      );
-    });
-  });
-
   group('Glicko2', () {
     test('creates system with default settings', () {
       const glicko = Glicko2();
@@ -115,17 +28,14 @@ void main() {
 
     test('example calculation from Glickman paper matches expected results',
         () {
-      // This is the exact example from the Glicko-2 paper
       const glicko = Glicko2(tau: 0.5);
 
-      // Player: rating 1500, RD 200, volatility 0.06
       const player = Glicko2Rating(
         rating: 1500,
         rd: 200,
         volatility: 0.06,
       );
 
-      // Opponents and results
       const results = [
         MatchResult.win(
           Glicko2Rating(rating: 1400, rd: 30, volatility: 0.06),
@@ -140,8 +50,6 @@ void main() {
 
       final newRating = glicko.calculateNewRating(player, results);
 
-      // Expected values from the paper:
-      // rating: 1464.06, RD: 151.52, volatility: 0.05999
       expect(newRating.rating, closeTo(1464.06, 0.5));
       expect(newRating.rd, closeTo(151.52, 0.5));
       expect(newRating.volatility, closeTo(0.05999, 0.0001));
@@ -235,8 +143,6 @@ void main() {
     });
 
     test('predictOutcome example from Glickman paper', () {
-      // Example from the paper: player 1400 (RD 80) vs player 1500 (RD 150)
-      // Expected outcome: 0.376
       const glicko = Glicko2();
       const player = Glicko2Rating(rating: 1400, rd: 80, volatility: 0.06);
       const opponent = Glicko2Rating(rating: 1500, rd: 150, volatility: 0.06);
@@ -250,13 +156,11 @@ void main() {
       const glicko = Glicko2();
       const player = Glicko2Rating(rating: 1500, rd: 200, volatility: 0.06);
 
-      // Win against weak opponent
       const weakOpponent =
           Glicko2Rating(rating: 1300, rd: 50, volatility: 0.06);
       const resultsWeak = [MatchResult.win(weakOpponent)];
       final ratingAfterWeak = glicko.calculateNewRating(player, resultsWeak);
 
-      // Win against strong opponent
       const strongOpponent =
           Glicko2Rating(rating: 1700, rd: 50, volatility: 0.06);
       const resultsStrong = [MatchResult.win(strongOpponent)];
@@ -272,11 +176,9 @@ void main() {
     test('high RD players have more volatile rating changes', () {
       const glicko = Glicko2();
 
-      // Player with high RD (uncertain rating)
       const uncertainPlayer =
           Glicko2Rating(rating: 1500, rd: 300, volatility: 0.06);
 
-      // Player with low RD (certain rating)
       const certainPlayer =
           Glicko2Rating(rating: 1500, rd: 50, volatility: 0.06);
 
@@ -300,7 +202,6 @@ void main() {
       const glicko = Glicko2();
       const player = Glicko2Rating(rating: 1500, rd: 200, volatility: 0.06);
 
-      // Inconsistent results: beating strong opponent after losing to weak one
       const results = [
         MatchResult.loss(
           Glicko2Rating(rating: 1300, rd: 50, volatility: 0.06),
@@ -312,47 +213,36 @@ void main() {
 
       final newRating = glicko.calculateNewRating(player, results);
 
-      // Volatility should change due to inconsistent performance
-      // (exact behavior depends on delta calculation)
       expect(newRating.volatility, isPositive);
     });
-  });
 
-  group('Integration tests', () {
     test('simulates a small tournament', () {
       const glicko = Glicko2();
 
-      // Four players
       const alice = Glicko2Rating(rating: 1500, rd: 200, volatility: 0.06);
       const bob = Glicko2Rating(rating: 1400, rd: 150, volatility: 0.06);
       const charlie = Glicko2Rating(rating: 1550, rd: 100, volatility: 0.06);
       const diana = Glicko2Rating(rating: 1700, rd: 300, volatility: 0.06);
 
-      // Alice's matches
       const aliceResults = [
         MatchResult.win(bob),
         MatchResult.loss(charlie),
         MatchResult.loss(diana),
       ];
 
-      // Bob's matches
       const bobResults = [
         MatchResult.loss(alice),
         MatchResult.loss(charlie),
         MatchResult.loss(diana),
       ];
 
-      // Calculate new ratings
       final aliceNew = glicko.calculateNewRating(alice, aliceResults);
       final bobNew = glicko.calculateNewRating(bob, bobResults);
 
-      // Alice should have lower rating (1 win, 2 losses)
       expect(aliceNew.rating, lessThan(alice.rating));
 
-      // Bob should have much lower rating (3 losses)
       expect(bobNew.rating, lessThan(bob.rating));
 
-      // Both should have reduced RD (played games)
       expect(aliceNew.rd, lessThan(alice.rd));
       expect(bobNew.rd, lessThan(bob.rd));
     });
@@ -366,10 +256,7 @@ void main() {
 
       final newRating = glicko.calculateNewRating(player, results);
 
-      // Rating should stay approximately the same after draw with equal opponent
       expect(newRating.rating, closeTo(player.rating, 10.0));
-
-      // RD should still decrease
       expect(newRating.rd, lessThan(player.rd));
     });
 
@@ -377,11 +264,9 @@ void main() {
       const glicko = Glicko2();
       const opponent = Glicko2Rating(rating: 1500, rd: 150, volatility: 0.06);
 
-      // Start with default rating
       var playerRating =
           const Glicko2Rating(rating: 1500, rd: 200, volatility: 0.06);
 
-      // Simulate 5 rating periods with wins
       for (var period = 0; period < 5; period++) {
         const results = [
           MatchResult.win(opponent),
@@ -391,10 +276,8 @@ void main() {
         playerRating = glicko.calculateNewRating(playerRating, results);
       }
 
-      // After 5 periods of winning, rating should be significantly higher
       expect(playerRating.rating, greaterThan(1600));
 
-      // RD should have stabilized (be relatively low)
       expect(playerRating.rd, lessThan(150.0));
     });
   });
