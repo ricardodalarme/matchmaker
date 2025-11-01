@@ -1,3 +1,3 @@
-## 1.0.0
+## 0.1.0
 
-- Initial version.
+Initial release of Matchmaker - A pure Dart package for video game skill rating systems.

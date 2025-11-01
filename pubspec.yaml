@@ -1,6 +1,6 @@
 name: matchmaker
 description: A pure Dart package for skill rating and matchmaking systems. Matchmaker provides battle-tested rating algorithms for competitive games and multiplayer applications.
-version: 0.1.0
+version: 0.1.0+2
 homepage: https://github.com/ricardodalarme/matchmaker
 repository: https://github.com/ricardodalarme/matchmaker
 issue_tracker: https://github.com/ricardodalarme/matchmaker/issues
