@@ -7,6 +7,9 @@ Skill rating and matchmaking algorithms for competitive games. Currently support
 
 ## Supported Rating Systems
 
+### Elo
+
+
 ### Glicko-2
 
 [Glicko-2](https://www.glicko.net/glicko/glicko2.pdf) is an improved version of the classic Elo rating system. While Elo just tracks a single number, Glicko-2 tracks three things:
@@ -23,10 +26,12 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  matchmaker: ^0.1.0
+  matchmaker: ^0.2.0
 ```
 
 ## Usage
+
+### Elo
 
 ### Glicko-2
 

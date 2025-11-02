@@ -4,9 +4,12 @@
 /// and multiplayer applications.
 ///
 /// Supported Rating Systems
+/// * Elo
 /// * Glicko-2
 library;
 
+export 'src/elo/elo.dart';
+export 'src/elo/elo_rating.dart';
 export 'src/glicko2/glicko2.dart';
 export 'src/glicko2/glicko2_rating.dart';
 export 'src/match_result.dart';
