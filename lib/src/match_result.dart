@@ -1,31 +1,31 @@
-import 'package:matchmaker/src/glicko2/glicko2_rating.dart';
+import 'package:matchmaker/src/rating.dart';
 
 /// Represents the outcome of a match between two players.
 ///
 /// A match result consists of:
 /// - The opponent's rating
 /// - The score (1.0 for win, 0.5 for draw, 0.0 for loss)
-class MatchResult {
+class MatchResult<T extends Rating> {
   /// Creates a match result.
   ///
   /// [opponent] is the opponent's rating.
   /// [score] is the outcome: 1.0 (win), 0.5 (draw), or 0.0 (loss).
-  const MatchResult({
+  const MatchResult._({
     required this.opponent,
     required this.score,
   }) : assert(score >= 0.0 && score <= 1.0, 'Score must be between 0 and 1');
 
   /// Creates a match result for a win.
-  const MatchResult.win(Glicko2Rating opponent) : this(opponent: opponent, score: 1);
+  const MatchResult.win(T opponent) : this._(opponent: opponent, score: 1);
 
   /// Creates a match result for a draw.
-  const MatchResult.draw(Glicko2Rating opponent) : this(opponent: opponent, score: 0.5);
+  const MatchResult.draw(T opponent) : this._(opponent: opponent, score: 0.5);
 
   /// Creates a match result for a loss.
-  const MatchResult.loss(Glicko2Rating opponent) : this(opponent: opponent, score: 0);
+  const MatchResult.loss(T opponent) : this._(opponent: opponent, score: 0);
 
   /// The opponent's rating at the time of the match.
-  final Glicko2Rating opponent;
+  final T opponent;
 
   /// The match outcome from the perspective of the player.
   ///

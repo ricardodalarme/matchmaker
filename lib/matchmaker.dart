@@ -9,4 +9,5 @@ library;
 
 export 'src/glicko2/glicko2.dart';
 export 'src/glicko2/glicko2_rating.dart';
-export 'src/glicko2/match_result.dart';
+export 'src/match_result.dart';
+export 'src/rating.dart';

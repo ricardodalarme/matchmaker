@@ -25,17 +25,5 @@ void main() {
       expect(result.score, equals(0.0));
       expect(result.opponent, equals(opponent));
     });
-
-    test('validates score range', () {
-      expect(
-        () => MatchResult(opponent: opponent, score: 1.5),
-        throwsA(isA<AssertionError>()),
-      );
-
-      expect(
-        () => MatchResult(opponent: opponent, score: -0.5),
-        throwsA(isA<AssertionError>()),
-      );
-    });
   });
 }

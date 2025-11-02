@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:matchmaker/src/glicko2/glicko2_rating.dart';
-import 'package:matchmaker/src/glicko2/match_result.dart';
+import 'package:matchmaker/src/match_result.dart';
 
 typedef _OpponentData = ({
   double scaledRating,
@@ -49,7 +49,7 @@ class Glicko2 {
   /// If [results] is empty, only applies rating deviation decay (for inactive players).
   Glicko2Rating calculateNewRating(
     Glicko2Rating currentRating,
-    List<MatchResult> results,
+    List<MatchResult<Glicko2Rating>> results,
   ) {
     // Step 2: Convert to Glicko-2 scale
     final scaledRating = _toGlicko2Scale(currentRating.rating);

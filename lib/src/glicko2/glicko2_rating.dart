@@ -1,10 +1,12 @@
+import 'package:matchmaker/src/rating.dart';
+
 /// Represents a player's rating in the Glicko-2 system.
 ///
 /// Each player has three values:
 /// - [rating]: The player's skill rating (higher = better)
 /// - [rd]: Rating deviation - uncertainty in the rating (lower = more certain)
 /// - [volatility]: Expected fluctuation in the player's rating
-class Glicko2Rating {
+class Glicko2Rating implements Rating {
   /// Creates a new Glicko-2 rating.
   ///
   /// - [rating]: The player's skill rating (default: 1500)
@@ -19,6 +21,7 @@ class Glicko2Rating {
   /// The player's skill rating.
   ///
   /// Higher ratings indicate stronger players.
+  @override
   final double rating;
 
   /// Rating deviation - indicates the uncertainty of the rating.
