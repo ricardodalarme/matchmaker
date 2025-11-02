@@ -16,7 +16,7 @@ typedef _OpponentData = ({
 /// measures the degree of expected fluctuation in a player's rating.
 ///
 /// This implementation follows the algorithm described by Dr. Mark E. Glickman.
-/// See: http://www.glicko.net/glicko/glicko2.pdf
+/// See: https://www.glicko.net/glicko/glicko2.pdf
 class Glicko2 {
   /// Creates a Glicko-2 rating system.
   ///

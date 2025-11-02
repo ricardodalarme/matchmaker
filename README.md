@@ -3,7 +3,7 @@
 [![pub package](https://img.shields.io/pub/v/matchmaker.svg)](https://pub.dev/packages/matchmaker)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Skill rating and matchmaking algorithms for competitive games. Currently supports Glicko-2, with Elo and TrueSkill coming soon.
+Skill rating and matchmaking algorithms for competitive games. Currently supports Glicko-2 and Elo.
 
 ## Supported Rating Systems
 
@@ -16,6 +16,17 @@ Skill rating and matchmaking algorithms for competitive games. Currently support
 - **Volatility**: How consistent you are. Erratic players have high volatility
 
 **Best for**: Games with varying player activity, 1v1 competitive games, any scenario where you need to track rating uncertainty.
+
+### Elo
+
+The classic rating system developed by Arpad Elo for chess. Simple and effective - just one number that goes up when you win and down when you lose. Rating differences directly translate to win probabilities using a logistic curve.
+
+- Clean mathematical foundation (logistic function)
+- No uncertainty tracking - just skill level
+- Easy to understand and explain to players
+- Battle-tested across decades of competitive chess
+
+**Best for**: Simple 1v1 games, when you want something straightforward, or when rating updates need to be transparent to players.
 
 ## Installation
 
@@ -135,6 +146,7 @@ Glicko-2 works best when you batch games into **rating periods** instead of upda
 **How many games per period?** Aim for 10-15 games per player, minimum 5.
 
 **How long should a period be?**
+
 - Active games: 1 day to 1 week
 - Normal activity: 1-2 weeks  
 - Slow games: 2 weeks to 1 month
@@ -156,3 +168,92 @@ for (final playerId in playerMatches.keys) {
   saveRating(playerId, newRating);
 }
 ```
+
+### Elo
+
+#### Quick Start
+
+```dart
+import 'package:matchmaker/matchmaker.dart';
+
+void main() {
+  const elo = Elo();
+
+  // Players start with a rating (usually 1500)
+  const ricardo = EloRating(rating: 1500);
+  const lucas = EloRating(rating: 1400);
+
+  // Ricardo beats Lucas
+  final results = [MatchResult.win(lucas)];
+  final newRating = elo.calculateNewRating(ricardo, results);
+
+  print('Ricardo new rating: ${newRating.rating.toStringAsFixed(0)}');
+  // Output: Ricardo new rating: 1521
+}
+```
+
+#### Predict match outcomes
+
+```dart
+const elo = Elo();
+const stronger = EloRating(rating: 1700);
+const weaker = EloRating(rating: 1500);
+
+final winChance = elo.predictOutcome(stronger, weaker);
+print('Win probability: ${(winChance * 100).toStringAsFixed(1)}%');
+// Output: Win probability: 76.0%
+```
+
+#### Series of games
+
+```dart
+const elo = Elo();
+var player = const EloRating(rating: 1500);
+const opponent = EloRating(rating: 1600);
+
+// Player loses, then wins, then draws
+player = elo.calculateNewRating(player, [MatchResult.loss(opponent)]);
+player = elo.calculateNewRating(player, [MatchResult.win(opponent)]);
+player = elo.calculateNewRating(player, [MatchResult.draw(opponent)]);
+
+print('Final rating: ${player.rating.toStringAsFixed(0)}');
+```
+
+#### Multiple games at once
+
+```dart
+const elo = Elo();
+const player = EloRating(rating: 1500);
+const opponent = EloRating(rating: 1600);
+
+// Process multiple games in one batch
+final results = [
+  MatchResult.win(opponent),
+  MatchResult.loss(opponent),
+  MatchResult.draw(opponent),
+];
+
+final newRating = elo.calculateNewRating(player, results);
+```
+
+#### Configuration
+
+```dart
+const elo = Elo(
+  kFactor: 16,        // How fast ratings change (10-32)
+  defaultRating: 1500, // Starting rating for new players
+);
+```
+
+**kFactor**: Controls how much ratings change per game
+
+- **32**: Fast changes, good for newer players (USCF standard)
+- **24**: Medium speed
+- **16**: Slower changes, good for established players  
+- **10**: Very stable, for high-level play (FIDE standard)
+
+Lower K-factors make ratings more stable but slower to adjust. Higher values let ratings adapt quickly but can be more volatile.
+
+## License
+
+MIT
