@@ -6,6 +6,7 @@
 /// Supported Rating Systems
 /// * Glicko-2
 /// * Elo
+/// * TrueSkill
 library;
 
 export 'src/elo/elo.dart';
@@ -14,3 +15,5 @@ export 'src/glicko2/glicko2.dart';
 export 'src/glicko2/glicko2_rating.dart';
 export 'src/match_result.dart';
 export 'src/rating.dart';
+export 'src/trueskill/trueskill.dart';
+export 'src/trueskill/trueskill_rating.dart';

@@ -3,7 +3,7 @@
 [![pub package](https://img.shields.io/pub/v/matchmaker.svg)](https://pub.dev/packages/matchmaker)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Skill rating and matchmaking algorithms for competitive games. Currently supports Glicko-2 and Elo.
+Skill rating and matchmaking algorithms for competitive games. Supports Glicko-2, Elo, and TrueSkill.
 
 ## Supported Rating Systems
 
@@ -27,6 +27,21 @@ The classic rating system developed by Arpad Elo for chess. Simple and effective
 - Battle-tested across decades of competitive chess
 
 **Best for**: Simple 1v1 games, when you want something straightforward, or when rating updates need to be transparent to players.
+
+### TrueSkill
+
+[TrueSkill](https://www.microsoft.com/en-us/research/project/trueskill-ranking-system/) is a Bayesian rating system developed by Microsoft Research. It represents skill as a Gaussian distribution with two parameters:
+
+- **μ (mu)**: The mean skill level (starts at 25)
+- **σ (sigma)**: The uncertainty/standard deviation (starts at 8.33)
+
+Key features:
+- Supports **team-based games** with any number of players per team
+- Handles **free-for-all** matches with multiple players/teams
+- Calculates **match quality** to help create balanced matches
+- Uses **conservative rating** (μ - 3σ) for leaderboards
+
+**Best for**: Team games, multiplayer matches, Xbox Live-style matchmaking, any game with more than 2 participants.
 
 ## Installation
 
@@ -253,6 +268,149 @@ const elo = Elo(
 - **10**: Very stable, for high-level play (FIDE standard)
 
 Lower K-factors make ratings more stable but slower to adjust. Higher values let ratings adapt quickly but can be more volatile.
+
+### TrueSkill
+
+#### Quick Start (1v1)
+
+```dart
+import 'package:matchmaker/matchmaker.dart';
+
+void main() {
+  const trueskill = TrueSkill();
+
+  // Create players with default ratings
+  final alice = trueskill.createRating();
+  final bob = trueskill.createRating();
+
+  // Alice beats Bob (rank 0 = first place, rank 1 = second place)
+  final results = trueskill.rate(
+    [[alice], [bob]],
+    ranks: [0, 1],
+  );
+
+  final newAlice = results[0][0];
+  final newBob = results[1][0];
+
+  print('Alice: μ=${newAlice.mu.toStringAsFixed(2)}, σ=${newAlice.sigma.toStringAsFixed(2)}');
+  print('Bob: μ=${newBob.mu.toStringAsFixed(2)}, σ=${newBob.sigma.toStringAsFixed(2)}');
+}
+```
+
+#### Team matches
+
+```dart
+const trueskill = TrueSkill();
+
+final alice = trueskill.createRating();
+final bob = trueskill.createRating();
+final carol = trueskill.createRating();
+final dave = trueskill.createRating();
+
+// Team A (Alice + Bob) beats Team B (Carol + Dave)
+final results = trueskill.rate(
+  [[alice, bob], [carol, dave]],
+  ranks: [0, 1],
+);
+
+// All players get updated ratings
+final newAlice = results[0][0];
+final newBob = results[0][1];
+final newCarol = results[1][0];
+final newDave = results[1][1];
+```
+
+#### Free-for-all (multiplayer)
+
+```dart
+const trueskill = TrueSkill();
+
+final p1 = trueskill.createRating();
+final p2 = trueskill.createRating();
+final p3 = trueskill.createRating();
+final p4 = trueskill.createRating();
+
+// P1 wins, P2 second, P3 third, P4 last
+final results = trueskill.rate(
+  [[p1], [p2], [p3], [p4]],
+  ranks: [0, 1, 2, 3],
+);
+```
+
+#### Draws
+
+```dart
+// Teams with the same rank are considered to have drawn
+final results = trueskill.rate(
+  [[alice], [bob]],
+  ranks: [0, 0],  // Same rank = draw
+);
+```
+
+#### Match quality
+
+Check if a match is fair before it happens:
+
+```dart
+const trueskill = TrueSkill();
+
+final alice = trueskill.createRating(mu: 25, sigma: 5);
+final bob = trueskill.createRating(mu: 25, sigma: 5);
+
+final quality = trueskill.quality([[alice], [bob]]);
+print('Match quality: ${(quality * 100).toStringAsFixed(1)}%');
+// Higher percentage = more balanced match
+```
+
+#### Win probability
+
+```dart
+const trueskill = TrueSkill();
+
+final strong = trueskill.createRating(mu: 30, sigma: 5);
+final weak = trueskill.createRating(mu: 20, sigma: 5);
+
+final winChance = trueskill.predictWin(strong, weak);
+print('Win probability: ${(winChance * 100).toStringAsFixed(1)}%');
+```
+
+#### Conservative rating (for leaderboards)
+
+```dart
+final player = trueskill.createRating(mu: 30, sigma: 5);
+
+// Conservative estimate: μ - 3σ
+// This is what you'd display on a leaderboard
+print('Leaderboard rating: ${player.conservativeRating.toStringAsFixed(1)}');
+```
+
+#### Partial play (weights)
+
+For players who only participated part of a game:
+
+```dart
+final results = trueskill.rate(
+  [[fullTimePlayer, halfTimePlayer], [opponent1, opponent2]],
+  ranks: [0, 1],
+  weights: [[1.0, 0.5], [1.0, 1.0]],  // halfTimePlayer only played 50%
+);
+```
+
+#### Configuration
+
+```dart
+const trueskill = TrueSkill(
+  mu: 25.0,              // Default mean skill
+  sigma: 8.333,          // Default uncertainty (mu/3)
+  beta: 4.167,           // Skill class width (sigma/2)
+  tau: 0.0833,           // Dynamics factor (sigma/100)
+  drawProbability: 0.10, // Probability of draws in this game
+);
+```
+
+- **beta**: Distance between skill classes. Smaller = more deterministic outcomes
+- **tau**: Prevents sigma from getting too low. Models skill changes over time
+- **drawProbability**: How common draws are in your game (0.0 to 1.0)
 
 ## License
 
